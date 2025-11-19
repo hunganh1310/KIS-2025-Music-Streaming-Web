@@ -1,0 +1,46 @@
+name: Deploy App
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Debug directory structure
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Repository contents:"
+          ls -la
+      
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+      
+      - name: Create Vercel config directory
+        run: |
+          mkdir -p .vercel
+          echo '{
+            "projectId": "${{ secrets.VERCEL_PROJECT_ID }}",
+            "orgId": "${{ secrets.VERCEL_ORG_ID }}"
+          }' > .vercel/project.json
+          
+          # Debug
+          cat .vercel/project.json
+      
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  
+  deploy-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Deploy to Render
+        run: curl -X GET ${{ secrets.RENDER_DEPLOY_HOOK }}
