@@ -18,6 +18,7 @@ logs/
 
 # IDE/editor settings
 .vscode/
+.idea
 
 # OS generated files
 .DS_Store

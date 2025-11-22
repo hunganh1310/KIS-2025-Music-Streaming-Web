@@ -1,29 +1,39 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from models.base import engine, Base
+from models.song import Song
+from models.user import User
+from models.album import Album
+from models.artist import Artist
+from models.album_artists import AlbumArtist
+from models.playlist import Playlist
+from models.playlist_user import PlaylistUser
+from models.playlist_tracks import PlaylistTracks
+from routes.auth_routes import router as auth_router
+from routes.music_routes import router as music_router
+from routes.user_routes import router as user_router
+from routes.table_routes import router as database_router
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+app = FastAPI()
 
-app = FastAPI(title="Music Streaming API")
-
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",  # Development
+        "https://music-streaming-app-frontend.vercel.app",   # Vercel deployments
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+Base.metadata.create_all(bind=engine)
+
+app.include_router(auth_router, prefix="/api/auth")
+app.include_router(music_router, prefix="/api/music")
+app.include_router(user_router, prefix="/api/user")
+app.include_router(database_router, prefix="/api/database")
+
 @app.get("/")
-def read_root():
-    return {"message": "Music Streaming API is running"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+def root():
+    return {"message": "Testing OK"}
